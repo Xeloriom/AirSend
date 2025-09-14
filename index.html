@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AirSend</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Spline Viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.57/build/spline-viewer.js"></script>
+
+    <!-- Google Font Roboto Thin -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body, h1, h2, p, button {
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+
+</head>
+<body class="relative h-screen w-screen overflow-hidden text-black">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full p-6 flex justify-start items-center z-50 pointer-events-none cursor-default">
+    <h1 class="text-2xl font-thin">AirSend</h1>
+</header>
+
+<!-- Content à gauche -->
+<div class="absolute left-10 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none cursor-default">
+    <h2 class="text-9xl mb-10 w-[70%] font-thin">L’email devient magique</h2>
+    <p class="text-4xl mb-10 w-[50%] font-thin">Envoyez vos messages avec élégance et simplicité rapide fluide sans effort</p>
+
+    <button onclick="Page('Dashboard.html')" class="pointer-events-auto cursor-pointer flex items-center gap-2 font-thin bg-black rounded-xl text-white py-4 px-10 transition duration-300">
+        <!-- Icône mail -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+        </svg>
+        Envoyer des emails
+    </button>
+</div>
+
+<!-- Spline 3D Scene -->
+<spline-viewer class="h-[110vh] w-screen pointer-events-auto" url="https://prod.spline.design/Ab0OvGQPOBaHTHEw/scene.splinecode"></spline-viewer>
+
+<script>
+    function Page(page) {
+        // Redirige vers la page passée en paramètre
+        window.location.href = page;
+    }
+</script>
+</body>
+</html>
