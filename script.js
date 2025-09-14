@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let customers = JSON.parse(localStorage.getItem('customers')) || [];
     let selectedIndex = null;
     let toDeleteIndex = null;
-    let globalMailTemplate = JSON.parse(localStorage.getItem('globalMailTemplate')) || {name:'Nom template', type:'Texte', content:''};
+    let globalMailTemplate = JSON.parse(localStorage.getItem('globalMailTemplate')) || { name: 'Nom template', type: 'Texte', content: '' };
 
     const customerTableBody = document.getElementById('customerTable');
     const rightPanel = document.getElementById('rightPanel');
@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const successPopup = document.getElementById('successPopup');
     const addCustomerBtn = document.getElementById('addCustomerBtn');
     const editTemplateBtn = document.getElementById('editTemplateBtn');
+
+    closePanelBtn.style.display = "none";
+    closePanelBtn.onclick = () => hideRightPanel();
 
     function showError(message) {
         errorPopup.textContent = message;
@@ -122,41 +125,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    function showCustomerDetails(c, editMode = false, viewMode = false) {
+    function showCustomerDetails(c, editMode = false, viewMode = false, creating = false) {
         rightPanel.classList.remove('hidden');
         closePanelBtn.style.display = "block";
-        closePanelBtn.onclick = () => hideRightPanel();
+        closePanelBtn.classList.remove('hidden');
 
         if (editMode) {
             rightPanel.innerHTML = `
-        <button id="closePanelBtn" title="Fermer" 
-          class="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-300 transition focus:outline-none">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-        <h3 class="text-4xl font-thin mb-10">Éditer Client</h3>
-        <div class="flex flex-col space-y-7">
-          <input id="name" value="${c.name || ''}" placeholder="Nom"
-            class="border p-4 rounded shadow-inner text-2xl font-thin glass" />
-          <input id="company" value="${c.company || ''}" placeholder="Entreprise"
-            class="border p-4 rounded shadow-inner text-2xl font-thin glass" />
-          <input id="email" value="${c.email || ''}" placeholder="Email"
-            class="border p-4 rounded shadow-inner text-2xl font-thin glass" />
-          <div class="flex gap-4 mt-12">
-            <button id="saveEditBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-blue-300/50 transition rounded-xl">
-              Enregistrer
-            </button>
-            <button id="cancelEditBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-gray-400/40 transition rounded-xl">
-              Annuler
-            </button>
-          </div>
+      <h3 class="text-4xl font-thin mb-10">${creating ? 'Créer un nouveau client' : 'Éditer Client'}</h3>
+      <div class="flex flex-col space-y-7">
+        <input id="name" value="${c.name || ''}" placeholder="Nom"
+          class="border p-4 rounded shadow-inner text-2xl font-thin glass" />
+        <input id="company" value="${c.company || ''}" placeholder="Entreprise"
+          class="border p-4 rounded shadow-inner text-2xl font-thin glass" />
+        <input id="email" value="${c.email || ''}" placeholder="Email"
+          class="border p-4 rounded shadow-inner text-2xl font-thin glass" />
+        <div class="flex gap-4 mt-12">
+          <button id="saveEditBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-blue-300/50 transition rounded-xl">
+            ${creating ? 'Créer' : 'Enregistrer'}
+          </button>
+          <button id="cancelEditBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-gray-400/40 transition rounded-xl">
+            Annuler
+          </button>
         </div>
-      `;
+      </div>
+    `;
 
-            document.getElementById('cancelEditBtn').onclick = () => showCustomerDetails(c, false);
+            document.getElementById('cancelEditBtn').onclick = () => {
+                if (creating) hideRightPanel();
+                else showCustomerDetails(c, false);
+            };
 
             document.getElementById('saveEditBtn').onclick = () => {
                 const name = document.getElementById('name').value.trim();
@@ -171,44 +169,45 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                c.name = name;
-                c.company = company;
-                c.email = email;
+                if(creating){
+                    customers.push({ name, company, email });
+                    selectedIndex = customers.length - 1;
+                } else {
+                    c.name = name;
+                    c.company = company;
+                    c.email = email;
+                }
 
                 saveCustomers();
-                showSuccess('Client mis à jour');
+                showSuccess(creating ? 'Client créé' : 'Client mis à jour');
+                showCustomerDetails(customers[selectedIndex], false);
             };
 
         } else if (viewMode) {
             rightPanel.innerHTML = `
-        <button id="closePanelBtn" title="Fermer" 
-                class="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-300 transition focus:outline-none">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-        <h3 class="text-4xl font-thin mb-8">${c.name}</h3>
-        <p class="mb-6 text-2xl font-thin"><strong>Entreprise :</strong> ${c.company}</p>
-        <p class="mb-6 text-xl font-thin"><strong>Email :</strong> ${c.email || ''}</p>
-      `;
+      <h3 class="text-4xl font-thin mb-8">${c.name}</h3>
+      <p class="mb-6 text-2xl font-thin"><strong>Entreprise :</strong> ${c.company}</p>
+      <p class="mb-6 text-xl font-thin"><strong>Email :</strong> ${c.email || ''}</p>
+    `;
 
-            document.getElementById('closePanelBtn').onclick = () => hideRightPanel();
+            closePanelBtn.onclick = () => hideRightPanel();
 
         } else {
             rightPanel.innerHTML = `<p class="text-gray-400 text-center mt-20">Cliquez sur "Ajouter" ou un client pour éditer</p>`;
             closePanelBtn.style.display = "none";
+            closePanelBtn.classList.add('hidden');
         }
     }
 
     function hideRightPanel() {
         rightPanel.classList.add('hidden');
+        closePanelBtn.style.display = "none";
+        closePanelBtn.classList.add('hidden');
         selectedIndex = null;
     }
 
     addCustomerBtn.onclick = () => {
-        showCustomerDetails({ name: '', company: '', email: '' }, true);
+        showCustomerDetails({ name: '', company: '', email: '' }, true, false, true);
     };
 
     editTemplateBtn.onclick = () => {
@@ -218,40 +217,32 @@ document.addEventListener("DOMContentLoaded", () => {
     function showTemplateEditor() {
         rightPanel.classList.remove('hidden');
         closePanelBtn.style.display = "block";
+        closePanelBtn.classList.remove('hidden');
         closePanelBtn.onclick = () => hideRightPanel();
 
         rightPanel.innerHTML = `
-      <button id="closePanelBtn" title="Fermer" 
-        class="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-300 transition focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+    <h3 class="text-4xl font-thin mb-10">Modifier Template Global</h3>
+    <input id="templateName" value="${globalMailTemplate.name}" placeholder="Nom du template"
+           class="border p-4 rounded-xl glass shadow-inner text-2xl font-thin"/>
+    <label class="text-xl font-thin mt-4">Type de template :</label>
+    <select id="templateType" class="border p-4 rounded-xl glass shadow-inner text-xl font-thin">
+      <option ${globalMailTemplate.type === 'Texte' ? 'selected' : ''}>Texte</option>
+      <option ${globalMailTemplate.type === 'HTML' ? 'selected' : ''}>HTML</option>
+    </select>
+    <label class="text-xl font-thin mt-4">Contenu du mail :</label>
+    <textarea id="templateContent" rows="8"
+      class="border p-4 rounded-xl glass shadow-inner text-lg font-thin"
+      placeholder="Message ${globalMailTemplate.type === 'HTML' ? 'HTML' : 'texte'}">${globalMailTemplate.content}</textarea>
+    <div class="flex gap-4 mt-12">
+      <button id="saveTemplateBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-blue-300/50 transition rounded-xl">
+        Enregistrer
       </button>
-      <h3 class="text-4xl font-thin mb-10">Modifier Template Global</h3>
-      <input id="templateName" value="${globalMailTemplate.name}" placeholder="Nom du template"
-             class="border p-4 rounded-xl glass shadow-inner text-2xl font-thin"/>
-      <label class="text-xl font-thin mt-4">Type de template :</label>
-      <select id="templateType" class="border p-4 rounded-xl glass shadow-inner text-xl font-thin">
-        <option ${globalMailTemplate.type === 'Texte' ? 'selected' : ''}>Texte</option>
-        <option ${globalMailTemplate.type === 'HTML' ? 'selected' : ''}>HTML</option>
-      </select>
-      <label class="text-xl font-thin mt-4">Contenu du mail :</label>
-      <textarea id="templateContent" rows="8"
-        class="border p-4 rounded-xl glass shadow-inner text-lg font-thin"
-        placeholder="Message ${globalMailTemplate.type === 'HTML' ? 'HTML' : 'texte'}">${globalMailTemplate.content}</textarea>
-      <div class="flex gap-4 mt-12">
-        <button id="saveTemplateBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-blue-300/50 transition rounded-xl">
-          Enregistrer
-        </button>
-        <button id="cancelTemplateBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-gray-400/40 transition rounded-xl">
-          Annuler
-        </button>
-      </div>
-    `;
+      <button id="cancelTemplateBtn" class="px-8 py-4 text-2xl glass font-thin shadow hover:bg-gray-400/40 transition rounded-xl">
+        Annuler
+      </button>
+    </div>
+  `;
 
-        document.getElementById('closePanelBtn').onclick = () => hideRightPanel();
         document.getElementById('cancelTemplateBtn').onclick = () => hideRightPanel();
         document.getElementById('saveTemplateBtn').onclick = () => {
             globalMailTemplate.name = document.getElementById('templateName').value.trim();
