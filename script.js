@@ -269,22 +269,39 @@ document.addEventListener("DOMContentLoaded", () => {
             showError("Le template global doit être configuré avant l'envoi.");
             return;
         }
-        fetch('send_mail.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+
+        fetch("./send_mail.php", { // <-- ./ pour bien pointer sur le fichier PHP local
+            method: "POST",
+            headers: {
+                "Accept": "application/json",  // <-- Ajout Accept
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
                 name: globalMailTemplate.name,
                 type: globalMailTemplate.type,
                 content: globalMailTemplate.content,
                 to: c.email
             })
-        }).then(res => res.json())
+        })
+            .then(async res => {
+                // Si le serveur répond avec une erreur HTTP
+                if (!res.ok) {
+                    let text = await res.text();
+                    throw new Error("Erreur HTTP " + res.status + " : " + text);
+                }
+                return res.json();
+            })
             .then(data => {
-                if (data.success) showSuccess(data.message || 'Mail envoyé !');
-                else showError(data.message || "Erreur à l'envoi.");
-            }).catch(() => {
-            showError("Erreur réseau lors de l'envoi du mail.");
-        });
+                if (data.success) {
+                    showSuccess(data.message || "Mail envoyé !");
+                } else {
+                    showError(data.message || "Erreur à l'envoi.");
+                }
+            })
+            .catch(err => {
+                showError("Erreur réseau : " + err.message);
+                console.error(err);
+            });
     }
 
     function validateEmail(email) {
