@@ -1,45 +1,35 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Charger autoload composer ici si utilisé
-require 'vendor/autoload.php';
-
 header('Content-Type: application/json');
 
-$data = json_decode(file_get_contents('php://input'), true);
+// Récupérer les données envoyées par fetch()
+$data = json_decode(file_get_contents("php://input"), true);
 
 if (!$data || empty($data['to']) || empty($data['content'])) {
-    echo json_encode(['success' => false, 'message' => 'Données invalides']);
+    echo json_encode(["success" => false, "message" => "Paramètres manquants"]);
     exit;
 }
 
-$mail = new PHPMailer(true);
+$to = $data['to'];
+$subject = $data['name'] ?? "Sans sujet";
+$content = $data['content'];
+$type = $data['type'] ?? "Texte";
 
-try {
-    $mail->isSMTP();
-    $mail->Host = 'smtp.exemple.com';
-    $mail->SMTPAuth = true;
-    $mail->Username = 'ton-email@exemple.com';
-    $mail->Password = 'ton-motdepasse';
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+// Construction du message
+if (strtolower($type) === "html") {
+    $message = "<html><body>" . $content . "</body></html>";
+    $headers  = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+} else {
+    $message = $content;
+    $headers = "";
+}
 
-    $mail->setFrom('ton-email@exemple.com', 'AirSend');
-    $mail->addAddress($data['to']);
+// Expéditeur par défaut
+$headers .= "From: MonApp <no-reply@monapp.com>\r\n";
 
-    $mail->Subject = $data['name'] ?? 'Message AirSend';
-
-    if (($data['type'] ?? 'Texte') === 'HTML') {
-        $mail->isHTML(true);
-        $mail->Body = $data['content'];
-    } else {
-        $mail->isHTML(false);
-        $mail->Body = strip_tags($data['content']);
-    }
-
-    $mail->send();
-    echo json_encode(['success' => true, 'message' => 'Mail envoyé avec succès']);
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => "Erreur SMTP : {$mail->ErrorInfo}"]);
+// Envoi
+if (mail($to, $subject, $message, $headers)) {
+    echo json_encode(["success" => true, "message" => "Mail envoyé à $to"]);
+} else {
+    echo json_encode(["success" => false, "message" => "Échec de l'envoi"]);
 }
