@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AirSend Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.57/build/spline-viewer.js" defer></script>
+    <script src="script.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body class="relative h-screen w-screen overflow-hidden text-black">
+
+<!-- Spline 3D Scene -->
+<spline-viewer class="h-[110vh] w-screen pointer-events-auto" url="https://prod.spline.design/Ab0OvGQPOBaHTHEw/scene.splinecode"></spline-viewer>
+
+<header class="fixed top-0 left-0 w-full p-6 flex items-center z-50 pointer-events-none">
+    <h1 class="text-2xl font-thin">AirSend</h1>
+</header>
+
+<main class="grid grid-cols-[60vw_1fr] gap-8 absolute inset-x-20 top-32 bottom-20 z-10">
+    <section>
+        <div class="flex justify-between items-center mb-16">
+            <h2 class="text-5xl font-thin">Gestion des clients</h2>
+            <div class="flex gap-4">
+                <button id="editTemplateBtn"
+                        class="px-6 py-3 rounded-xl glass shadow font-thin hover:bg-blue-300/50 transition"
+                        title="Modifier le template mail global">
+                    Modifier le template mail
+                </button>
+                <button id="addCustomerBtn"
+                        class="flex items-center gap-2 px-8 py-3 rounded-xl glass shadow-lg font-thin transition text-black hover:bg-white/50 hover:shadow-2xl hover:scale-105 active:scale-95"
+                        title="Ajouter un client">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+                    </svg>
+                    Ajouter Client
+                </button>
+            </div>
+        </div>
+        <div class="rounded-2xl shadow-2xl glass overflow-hidden">
+            <table class="min-w-full">
+                <thead class="bg-white/10">
+                <tr class="text-left text-gray-600 text-lg font-thin">
+                    <th class="p-6">Nom</th>
+                    <th class="p-6">Entreprise</th>
+                    <th class="p-6">Email</th>
+                    <th class="p-6">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="customerTable"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="rightPanel" class="glass border border-white/40 p-10 shadow-lg rounded-none overflow-y-auto hidden" style="min-width:420px; position:relative;">
+        <button id="closePanelBtn" title="Fermer"
+                class="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-300 transition focus:outline-none hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <p class="text-gray-400 text-center mt-20">Cliquez sur "Ajouter" ou un client pour éditer</p>
+    </section>
+</main>
+
+<div id="confirmDelete" aria-modal="true" role="dialog" aria-labelledby="confirmTitle" aria-describedby="confirmDesc">
+    <div class="popup-content">
+        <h2 id="confirmTitle" class="text-2xl mb-4">Confirmer la suppression</h2>
+        <p id="confirmDesc" class="mb-8">Voulez-vous vraiment supprimer ce client ?</p>
+        <div class="flex justify-center gap-6">
+            <button id="cancelDeleteBtn" class="btn btn-glass">Annuler</button>
+            <button id="confirmDeleteBtn" class="btn btn-accent">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<div id="errorPopup" aria-modal="true" role="alertdialog" class="popup-content hidden"></div>
+<div id="successPopup" aria-modal="true" role="alertdialog" class="popup-content hidden"></div>
+
+</body>
+</html>

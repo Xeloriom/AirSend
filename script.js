@@ -262,47 +262,43 @@ document.addEventListener("DOMContentLoaded", () => {
     function sendMail(idx) {
         const c = customers[idx];
         if (!c.email) {
-            showError("Veuillez saisir un email valide dans le client.");
+            showError("Veuillez saisir un email valide.");
             return;
         }
         if (!globalMailTemplate.name || !globalMailTemplate.content) {
-            showError("Le template global doit être configuré avant l'envoi.");
+            showError("Template manquant.");
             return;
         }
 
-        fetch("./send_mail.php", { // <-- ./ pour bien pointer sur le fichier PHP local
+        const token = "mlsn.249d9b2e75a524148c8cc91aa4b2b46f1b0e6f8aa83b05341e9caafab5273050";
+
+        // Proxy temporaire pour contourner CORS en local
+        const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+        const apiUrl = "https://api.mailersend.com/v1/email";
+
+        fetch(proxyUrl + apiUrl, {
             method: "POST",
             headers: {
-                "Accept": "application/json",  // <-- Ajout Accept
+                "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                name: globalMailTemplate.name,
-                type: globalMailTemplate.type,
-                content: globalMailTemplate.content,
-                to: c.email
+                from: { email: "ton_email@example.com", name: "AirSend" },
+                to: [{ email: c.email }],
+                subject: globalMailTemplate.name,
+                html: globalMailTemplate.type === "HTML" ? globalMailTemplate.content : undefined,
+                text: globalMailTemplate.type === "Texte" ? globalMailTemplate.content : undefined
             })
         })
             .then(async res => {
-                // Si le serveur répond avec une erreur HTTP
-                if (!res.ok) {
-                    let text = await res.text();
-                    throw new Error("Erreur HTTP " + res.status + " : " + text);
-                }
-                return res.json();
+                const data = await res.json();
+                if (res.ok) showSuccess("Mail envoyé !");
+                else showError(data.message || "Erreur API");
             })
-            .then(data => {
-                if (data.success) {
-                    showSuccess(data.message || "Mail envoyé !");
-                } else {
-                    showError(data.message || "Erreur à l'envoi.");
-                }
-            })
-            .catch(err => {
-                showError("Erreur réseau : " + err.message);
-                console.error(err);
-            });
+            .catch(err => showError("Erreur réseau : " + err.message));
     }
+
+
 
     function validateEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
