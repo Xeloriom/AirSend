@@ -1,85 +1,103 @@
-<!DOCTYPE html>
-<html lang="fr" class="h-full">
+<!doctype html>
+<html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AirSend Dashboard</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AirSend - Gestion Emails</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.57/build/spline-viewer.js" defer></script>
-    <script src="script.js" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet" />
+    <!-- Spline Viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.57/build/spline-viewer.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="relative h-screen w-screen overflow-hidden text-black">
 
 <!-- Spline 3D Scene -->
-<spline-viewer class="h-[110vh] w-screen pointer-events-auto" url="https://prod.spline.design/Ab0OvGQPOBaHTHEw/scene.splinecode"></spline-viewer>
+<spline-viewer class="absolute h-[110vh] w-screen pointer-events-auto z-0"
+               url="https://prod.spline.design/Ab0OvGQPOBaHTHEw/scene.splinecode"></spline-viewer>
 
-<header class="fixed top-0 left-0 w-full p-6 flex items-center z-50 pointer-events-none">
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full p-6  flex justify-start items-center z-50 pointer-events-none cursor-default ">
     <h1 class="text-2xl font-thin">AirSend</h1>
 </header>
 
-<main class="grid grid-cols-[60vw_1fr] gap-8 absolute inset-x-20 top-32 bottom-20 z-10">
-    <section>
-        <div class="flex justify-between items-center mb-16">
-            <h2 class="text-5xl font-thin">Gestion des clients</h2>
-            <div class="flex gap-4">
-                <button id="editTemplateBtn"
-                        class="px-6 py-3 rounded-xl glass shadow font-thin hover:bg-blue-300/50 transition"
-                        title="Modifier le template mail global">
-                    Modifier le template mail
-                </button>
-                <button id="addCustomerBtn"
-                        class="flex items-center gap-2 px-8 py-3 rounded-xl glass shadow-lg font-thin transition text-black hover:bg-white/50 hover:shadow-2xl hover:scale-105 active:scale-95"
-                        title="Ajouter un client">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
-                    </svg>
-                    Ajouter Client
-                </button>
-            </div>
+<!-- Modal Template -->
+<div id="templateModal" class="absolute inset-0 bg-black/50 flex items-center justify-center hidden z-[99999]">
+    <div class="bg-white rounded-2xl p-6 w-3/4 max-w-3xl shadow-xl absolute z-[999]">
+        <h2 class="text-xl font-semibold mb-4">Éditer le template d'email</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Zone de texte -->
+            <textarea id="templateInput" class="w-full h-64 p-3 border rounded-lg font-mono"
+                      placeholder="Écris ton template ici..."></textarea>
+            <!-- Aperçu -->
+            <div id="templatePreview" class="w-full h-64 p-3 border rounded-lg overflow-auto bg-gray-50"></div>
         </div>
-        <div class="rounded-2xl shadow-2xl glass overflow-hidden">
-            <table class="min-w-full">
-                <thead class="bg-white/10">
-                <tr class="text-left text-gray-600 text-lg font-thin">
-                    <th class="p-6">Nom</th>
-                    <th class="p-6">Entreprise</th>
-                    <th class="p-6">Email</th>
-                    <th class="p-6">Actions</th>
-                </tr>
-                </thead>
-                <tbody id="customerTable"></tbody>
-            </table>
-        </div>
-    </section>
-
-    <section id="rightPanel" class="glass border border-white/40 p-10 shadow-lg rounded-none overflow-y-auto hidden" style="min-width:420px; position:relative;">
-        <button id="closePanelBtn" title="Fermer"
-                class="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-300 transition focus:outline-none hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </button>
-        <p class="text-gray-400 text-center mt-20">Cliquez sur "Ajouter" ou un client pour éditer</p>
-    </section>
-</main>
-
-<div id="confirmDelete" aria-modal="true" role="dialog" aria-labelledby="confirmTitle" aria-describedby="confirmDesc">
-    <div class="popup-content">
-        <h2 id="confirmTitle" class="text-2xl mb-4">Confirmer la suppression</h2>
-        <p id="confirmDesc" class="mb-8">Voulez-vous vraiment supprimer ce client ?</p>
-        <div class="flex justify-center gap-6">
-            <button id="cancelDeleteBtn" class="btn btn-glass">Annuler</button>
-            <button id="confirmDeleteBtn" class="btn btn-accent">Supprimer</button>
+        <div class="flex justify-end gap-3 mt-4">
+            <button id="closeTemplate" class="px-4 py-2 bg-gray-400 text-white rounded-lg">Annuler</button>
+            <button id="saveTemplate" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Enregistrer</button>
         </div>
     </div>
 </div>
 
-<div id="errorPopup" aria-modal="true" role="alertdialog" class="popup-content hidden"></div>
-<div id="successPopup" aria-modal="true" role="alertdialog" class="popup-content hidden"></div>
+<h1 class="text-5xl font-thin  mb-10 pt-[5%] pl-20 text-black drop-shadow-lg relative z-10">Gestion des Emails</h1>
 
+<!-- Formulaire -->
+<div class="ml-20 w-full max-w-6xl glass p-6 rounded-2xl mb-8 flex flex-wrap gap-4 items-end relative z-10 cursor-pointer">
+    <input type="text" id="firstName" placeholder="Prénom" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
+    <input type="text" id="lastName" placeholder="Nom" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
+    <input type="text" id="company" placeholder="Entreprise" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
+    <input type="email" id="email" placeholder="Email" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
+    <button id="addBtn" class="glass text-black px-6 py-2 rounded-xl shadow-lg hover:scale-105 transition transform icon-btn">
+        <i class="fas fa-plus"></i> Ajouter
+    </button>
+    <!-- Toggle automatique -->
+    <div class="flex items-center gap-2 ml-4">
+        <span>Mode auto:</span>
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" value="" id="autoToggle" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 transition-all"></div>
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-5 transition-all"></div>
+        </label>
+    </div>
+    <!-- Bouton Template -->
+    <button id="templateBtn" class="glass text-black px-6 py-2 rounded-xl shadow-lg hover:scale-105 transition transform icon-btn">
+        <i class="fas fa-file-alt"></i> Template
+    </button>
+
+
+</div>
+
+<!-- Tableau -->
+<div class="ml-20 w-full max-w-6xl overflow-x-auto glass rounded-2xl relative z-10 cursor-pointer">
+    <table class="w-full rounded-xl font-thin overflow-hidden text-black">
+        <thead class="bg-white/20">
+        <tr class="text-left">
+            <th class="px-4 py-3 font-thin">Prénom</th>
+            <th class="px-4 py-3 font-thin">Nom</th>
+            <th class="px-4 py-3 font-thin">Entreprise</th>
+            <th class="px-4 py-3 font-thin">Email</th>
+            <th class="px-4 py-3 font-thin">Statut</th>
+            <th class="px-4 py-3 font-thin">Action</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<!-- Modal suppression -->
+<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-2xl p-6 w-80 flex flex-col items-center">
+        <h2 class="text-lg font-medium mb-4">Supprimer cet utilisateur ?</h2>
+        <div class="flex gap-4">
+            <button id="cancelDelete" class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition">Annuler</button>
+            <button id="confirmDelete" class="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
