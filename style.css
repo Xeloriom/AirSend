@@ -43,3 +43,26 @@ button.icon-btn {
     transition: opacity 0.3s ease;
 }
 
+.custom-dropdown {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dropdown-menu {
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+.badge-gray { background-color: #E5E7EB; color: #374151; }
+.badge-yellow { background-color: #FEF3C7; color: #B45309; }
+.badge-blue { background-color: #DBEAFE; color: #2563EB; }
+.badge-green { background-color: #D1FAE5; color: #15803D; }
+.badge-red { background-color: #FECACA; color: #B91C1C; }
+
+.dropdown-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.dropdown-toggle[aria-expanded="true"] i {
+    transform: rotate(180deg);
+}
+
+

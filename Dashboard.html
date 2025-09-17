@@ -25,7 +25,7 @@
 </header>
 
 <!-- Modal Template -->
-<div id="templateModal" class="absolute inset-0 bg-black/50 flex items-center justify-center hidden z-[99999]">
+<div id="templateModal" class="absolute inset-0 bg-black/50 flex items-center justify-center hidden z-[9999]">
     <div class="bg-white rounded-2xl p-6 w-3/4 max-w-3xl shadow-xl absolute z-[999]">
         <h2 class="text-xl font-semibold mb-4">Éditer le template d'email</h2>
         <div class="grid grid-cols-2 gap-4">
@@ -45,33 +45,104 @@
 <h1 class="text-5xl font-thin  mb-10 pt-[5%] pl-20 text-black drop-shadow-lg relative z-10">Gestion des Emails</h1>
 
 <!-- Formulaire -->
-<div class="ml-20 w-full max-w-6xl glass p-6 rounded-2xl mb-8 flex flex-wrap gap-4 items-end relative z-10 cursor-pointer">
-    <input type="text" id="firstName" placeholder="Prénom" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
-    <input type="text" id="lastName" placeholder="Nom" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
-    <input type="text" id="company" placeholder="Entreprise" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
-    <input type="email" id="email" placeholder="Email" class="px-4 py-2 rounded-lg bg-white/80 border border-white/30 text-black flex-1">
-    <button id="addBtn" class="glass text-black px-6 py-2 rounded-xl shadow-lg hover:scale-105 transition transform icon-btn">
-        <i class="fas fa-plus"></i> Ajouter
-    </button>
-    <!-- Toggle automatique -->
-    <div class="flex items-center gap-2 ml-4">
-        <span>Mode auto:</span>
+<div class="ml-20 w-full max-w-[90%] glass p-6 rounded-2xl mb-8 flex items-center gap-4 relative z-[999] cursor-pointer ">
+    <!-- Champs -->
+    <input type="text" id="firstName" placeholder="Prénom"
+           class="px-4 py-2 rounded-lg bg-white/40 border border-white/30 text-black w-40">
+    <input type="text" id="lastName" placeholder="Nom"
+           class="px-4 py-2 rounded-lg bg-white/40 border border-white/30 text-black w-40">
+    <input type="text" id="company" placeholder="Entreprise"
+           class="px-4 py-2 rounded-lg bg-white/40 border border-white/30 text-black w-48">
+    <input type="email" id="email" placeholder="Email"
+           class="px-4 py-2 rounded-lg bg-white/40 border border-white/30 text-black w-64">
+    <input type="tel" id="phone" placeholder="Téléphone"
+           class="px-4 py-2 rounded-lg bg-white/40 border border-white/30 text-black w-40">
+
+    <!-- Toggle auto -->
+    <div class="flex items-center gap-2 ml-6">
+        <span>Auto:</span>
         <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" value="" id="autoToggle" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 transition-all"></div>
+            <input type="checkbox" id="autoToggle" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all"></div>
             <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-5 transition-all"></div>
         </label>
     </div>
-    <!-- Bouton Template -->
-    <button id="templateBtn" class="glass text-black px-6 py-2 rounded-xl shadow-lg hover:scale-105 transition transform icon-btn">
+
+    <!-- Boutons -->
+    <button id="templateBtn"
+            class="glass text-black px-5 py-2 rounded-xl shadow-lg hover:scale-105 transition transform flex items-center gap-2">
         <i class="fas fa-file-alt"></i> Template
     </button>
+    <button id="addBtn"
+            class="glass text-black px-5 py-2 rounded-xl shadow-lg hover:scale-105 transition transform flex items-center gap-2">
+        <i class="fas fa-plus"></i> Ajouter
+    </button>
+
+    <!-- Menu déroulant CSV -->
+    <div class="relative inline-block text-left">
+        <button id="csvMenuBtn"
+                class="glass text-black px-5 py-2 rounded-xl shadow-lg hover:scale-105 transition transform flex items-center gap-2">
+            <i class="fas fa-file-csv"></i> CSV <i class="fas fa-chevron-down ml-1"></i>
+        </button>
+        <div id="csvMenu" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-20">
+            <div class="py-1">
+                <button id="exportCSV" class="w-full text-left px-4 py-2 text-sm text-black hover:bg-gray-100 flex items-center gap-2">
+                    <i class="fas fa-file-export"></i> Exporter
+                </button>
+                <button id="importCSV" class="w-full text-left px-4 py-2 text-sm text-black hover:bg-gray-100 flex items-center gap-2">
+                    <i class="fas fa-file-import"></i> Importer
+                </button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="importFile" accept=".csv" class="hidden">
+
+</div>
+
+<!-- Barre de recherche et filtres -->
+<div class="ml-20 w-full max-w-[90%] flex flex-wrap items-center gap-4 mb-4 relative z-[999]">
+    <!-- Recherche dynamique -->
+    <input type="text" id="searchInput" placeholder="Rechercher..."
+           class="px-4 py-2 rounded-lg bg-white/40 border border-white/30 text-black w-64">
+
+    <!-- Filtre par statut -->
+    <div class="relative w-full max-w-xs">
+        <select id="statusFilter"
+                class="glass appearance-none text-gray-800 font-medium px-5 py-3
+                 rounded-xl shadow-md border border-gray-200
+                 hover:border-blue-400 hover:shadow-lg
+                 transition-all duration-200 ease-in-out
+                 w-full pr-10 cursor-pointer ">
+            <option value="">Tous les statuts</option>
+            <option value="En attente">En attente</option>
+            <option value="En cours">En cours</option>
+            <option value="Envoyé">Envoyé</option>
+            <option value="Erreur">Erreur</option>
+        </select>
+        <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none"></i>
+    </div>
+
+    <!-- Filtre par entreprise -->
+    <div class="relative w-full max-w-xs ">
+        <select id="companyFilter"
+                class="glass appearance-none text-gray-800 font-medium px-5 py-3
+                 rounded-xl shadow-md border border-gray-200
+                 hover:border-blue-400 hover:shadow-lg
+                 transition-all duration-200 ease-in-out
+                 w-full pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300">
+            <option value="">Toutes les entreprises</option>
+            <!-- Options ajoutées dynamiquement depuis JS -->
+        </select>
+        <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none"></i>
+    </div>
+
 
 
 </div>
 
+
 <!-- Tableau -->
-<div class="ml-20 w-full max-w-6xl overflow-x-auto glass rounded-2xl relative z-10 cursor-pointer">
+<div class="ml-20 w-full max-w-[90%] overflow-x-auto glass rounded-2xl relative z-10 cursor-pointer">
     <table class="w-full rounded-xl font-thin overflow-hidden text-black">
         <thead class="bg-white/20">
         <tr class="text-left">
@@ -79,8 +150,14 @@
             <th class="px-4 py-3 font-thin">Nom</th>
             <th class="px-4 py-3 font-thin">Entreprise</th>
             <th class="px-4 py-3 font-thin">Email</th>
+            <th class="px-4 py-3 font-thin">Téléphone</th>
             <th class="px-4 py-3 font-thin">Statut</th>
-            <th class="px-4 py-3 font-thin">Action</th>
+            <th class="px-4 py-3 font-thin flex items-center justify-between">
+                Action
+                <button id="deleteAllBtn" title="Supprimer tous" class="text-black hover:scale-105 transition">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </th>
         </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -88,7 +165,7 @@
 </div>
 
 <!-- Modal suppression -->
-<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-[99999]">
     <div class="bg-white rounded-2xl p-6 w-80 flex flex-col items-center">
         <h2 class="text-lg font-medium mb-4">Supprimer cet utilisateur ?</h2>
         <div class="flex gap-4">
@@ -98,6 +175,13 @@
     </div>
 </div>
 
-<script src="app.js"></script>
+<!-- JS séquentiel -->
+<script src="js/users.js"></script>
+<script src="js/emails.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/csv.js"></script>
+<script src="js/main.js"></script>
+<script src="js/filters.js"></script>
+
 </body>
 </html>
