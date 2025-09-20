@@ -1,6 +1,7 @@
-// emails.js
-
+// --- Récupération template depuis localStorage ---
 let emailTemplate = localStorage.getItem("emailTemplate") || "";
+
+// --- Modales ---
 const templateBtn = document.getElementById("templateBtn");
 const templateModal = document.getElementById("templateModal");
 const closeTemplate = document.getElementById("closeTemplate");
@@ -8,68 +9,31 @@ const saveTemplate = document.getElementById("saveTemplate");
 const templateInput = document.getElementById("templateInput");
 const templatePreview = document.getElementById("templatePreview");
 
-// Initialisation template
 if(templateInput){
     templateInput.value = emailTemplate;
     templatePreview.innerHTML = emailTemplate || "<p>Aperçu vide...</p>";
-}
-
-// Aperçu live
-if(templateInput){
     templateInput.addEventListener("input", () => {
         templatePreview.innerHTML = templateInput.value;
     });
 }
 
-// Ouvrir modale
-if(templateBtn){
-    templateBtn.addEventListener("click", () => {
-        templateModal.classList.remove("hidden");
-    });
-}
+if(templateBtn) templateBtn.addEventListener("click", () => templateModal.classList.remove("hidden"));
+if(closeTemplate) closeTemplate.addEventListener("click", () => templateModal.classList.add("hidden"));
+if(saveTemplate) saveTemplate.addEventListener("click", () => {
+    emailTemplate = templateInput.value;
+    localStorage.setItem("emailTemplate", emailTemplate);
+    templatePreview.innerHTML = emailTemplate || "<p>Aperçu vide...</p>";
+    templateModal.classList.add("hidden");
+});
 
-// Fermer modale
-if(closeTemplate){
-    closeTemplate.addEventListener("click", () => {
-        templateModal.classList.add("hidden");
-    });
-}
-
-// Enregistrer template
-if(saveTemplate){
-    saveTemplate.addEventListener("click", () => {
-        emailTemplate = templateInput.value;
-        localStorage.setItem("emailTemplate", emailTemplate);
-        templatePreview.innerHTML = emailTemplate || "<p>Aperçu vide...</p>";
-        templateModal.classList.add("hidden");
-    });
-}
-
-// Fonction pour vérifier si le mail a été ouvert
-function checkEmailOpened(index) {
-    const user = users[index];
-    fetch('https://www.alhambra-web.com/get_opens.php')
-        .then(res => res.json())
-        .then(data => {
-            // data = objet UID -> infos utilisateur avec 'openedAt'
-            const opened = Object.values(data).some(entry => entry.email === user.email && entry.openedAt);
-            if(opened){
-                users[index].status = 'Ouvert';
-                localStorage.setItem('users', JSON.stringify(users));
-                renderTable();
-            }
-        })
-        .catch(err => console.error('Erreur check opens:', err));
-}
-
-// Fonction envoi d'email avec tracking
-function sendEmail(index) {
-    users[index].status = 'En cours';
+// --- Envoi d'email ---
+function sendEmail(index){
+    users[index].status = "En cours";
     renderTable();
 
-    fetch('https://www.alhambra-web.com/send_mail_api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    fetch("https://www.alhambra-web.com/send_mail_api.php", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify({
             firstName: users[index].firstName,
             lastName: users[index].lastName,
@@ -80,47 +44,75 @@ function sendEmail(index) {
             template: emailTemplate
         })
     })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                users[index].status = 'Envoyé';
-                console.log(data.message);
-
-                // Vérifie après quelques secondes si le mail a été ouvert
-                setTimeout(() => checkEmailOpened(index), 5000);
+            if(data.success){
+                users[index].status = "Envoyé";
+                users[index].uid = data.uid; // pour tracking pixel
             } else {
-                users[index].status = 'Erreur';
+                users[index].status = "Erreur";
                 console.error(data.message);
             }
-            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem("users", JSON.stringify(users));
             renderTable();
         })
-        .catch(error => {
-            users[index].status = 'Erreur';
-            localStorage.setItem('users', JSON.stringify(users));
+        .catch(err => {
+            users[index].status = "Erreur";
+            localStorage.setItem("users", JSON.stringify(users));
             renderTable();
-            console.error('Fetch error:', error);
+            console.error("Fetch error:", err);
         });
 }
 
-// Fonction pour rendre le tableau avec tous les statuts
-function renderTable() {
-    const tableBody = document.getElementById('tableBody');
-    tableBody.innerHTML = '';
+// --- Clic manuel "Vous n'êtes pas un robot" ---
+function manualConfirm(uid){
+    fetch(`https://www.alhambra-web.com/open.php?uid=${uid}&manual=1`)
+        .then(() => checkConfirmedOpens()) // mise à jour statuts
+        .catch(err => console.error("Erreur clic manuel:", err));
+}
+
+// --- Vérification automatique des ouvertures ---
+function checkConfirmedOpens(){
+    fetch("https://www.alhambra-web.com/get_opens.php")
+        .then(res => res.json())
+        .then(data => {
+            users.forEach((user, index) => {
+                const entry = Object.values(data).find(e => e.email === user.email);
+                if(entry){
+                    if(entry.instantOpenDetected){
+                        users[index].status = "Suspect"; // ouverture instantanée
+                    } else if(entry.openedAt){
+                        users[index].status = "Ouvert"; // ouverture confirmée
+                    }
+                    users[index].clicks = entry.clicks || 0;
+                }
+            });
+            localStorage.setItem("users", JSON.stringify(users));
+            renderTable();
+        })
+        .catch(err => console.error("Erreur check opens:", err));
+}
+
+// --- Render tableau ---
+function renderTable(){
+    const tableBody = document.getElementById("tableBody");
+    tableBody.innerHTML = "";
+
     users.forEach((user, index) => {
-        const row = document.createElement('tr');
+        const row = document.createElement("tr");
         row.innerHTML = `
             <td class="px-4 py-2">${user.firstName}</td>
             <td class="px-4 py-2">${user.lastName}</td>
             <td class="px-4 py-2">${user.company}</td>
             <td class="px-4 py-2">${user.email}</td>
-            <td class="px-4 py-2">${user.phone || '-'}</td>
+            <td class="px-4 py-2">${user.phone||'-'}</td>
             <td class="px-4 py-2">
                 <span class="px-3 py-1 text-xs font-medium text-white ${
-            user.status === 'Envoyé' ? 'bg-green-500' :
-                user.status === 'En cours' ? 'bg-yellow-500' :
-                    user.status === 'Ouvert' ? 'bg-blue-500' :
-                        'bg-red-500'
+            user.status === "Envoyé" ? "bg-green-500" :
+                user.status === "En cours" ? "bg-yellow-500" :
+                    user.status === "Ouvert" ? "bg-blue-500" :
+                        user.status === "Suspect" ? "bg-red-700" :
+                            "bg-gray-500"
         } rounded-full inline-block">
                     ${user.status}
                 </span>
@@ -138,5 +130,8 @@ function renderTable() {
     });
 }
 
-// Initial render
+// --- Initial render ---
 renderTable();
+
+// --- Vérifie les confirmations toutes les 5 secondes ---
+setInterval(checkConfirmedOpens, 5000);
