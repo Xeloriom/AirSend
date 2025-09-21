@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AirSend - Waiting List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-white text-gray-900 font-sans">
+<main class="crepi-bg min-h-screen grid grid-rows-[1fr_auto]">
+    <section
+            class="max-w-3xl mx-auto mt-24 mb-10 text-center px-4"
+            x-data="waitlistApp()"
+            x-init="init"
+            x-cloak
+    >
+        <!-- Badge personnes -->
+        <div
+                class="inline-flex items-center gap-2 text-gray-500 text-sm mb-4"
+                data-aos="fade-down"
+        >
+            <div class="flex -space-x-3 rtl:space-x-reverse">
+                <span class="w-7 h-7 rounded-full bg-[#D9D9D9]"></span>
+                <span class="w-7 h-7 rounded-full bg-[#070707]"></span>
+                <span class="w-7 h-7 rounded-full bg-[#F05959]"></span>
+            </div>
+            <span
+                    class="font-semibold text-gray-900 people-badge"
+                    :class="{ pop: popPeople }"
+            >
+                <span x-text="peopleCount"></span> Personnes
+            </span>
+            <span>sont déjà averties</span>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-6" data-aos="fade-up">AIR SEND</h1>
+
+        <!-- Formulaire -->
+        <form
+                class="max-w-md mx-auto flex flex-col gap-4"
+                @submit.prevent="handleSubmit"
+                novalidate
+                data-aos="zoom-in"
+                data-aos-delay="200"
+        >
+            <label
+                    for="emailInput"
+                    class="text-sm text-gray-500 uppercase tracking-wider"
+            >E-Mail</label
+            >
+            <div class="relative">
+                <input
+                        id="emailInput"
+                        name="email"
+                        type="email"
+                        placeholder="vous@example.com"
+                        class="w-full border-b border-gray-300 bg-transparent outline-none text-center py-2 px-4 placeholder-gray-400"
+                        x-model.trim="email"
+                        :class="{ 'border-red-500': error }"
+                />
+                <svg
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5"
+                        viewBox="0 0 13 11"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                            d="M1.92969 2.21875L6.09977 5.21266C6.34056 5.38553 6.65944 5.38553 6.90023 5.21266L11.0703 2.21875M2.28125 9.875H10.7188C11.4954 9.875 12.125 9.22208 12.125 8.41667V2.58333C12.125 1.77792 11.4954 1.125 10.7188 1.125H2.28125C1.5046 1.125 0.875 1.77792 0.875 2.58333V8.41667C0.875 9.22208 1.5046 9.875 2.28125 9.875Z"
+                            stroke="black"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                    />
+                </svg>
+            </div>
+            <button
+                    type="submit"
+                    class="group flex items-center justify-center gap-2 bg-gray-200 text-black py-2 px-6 w-1/2 mx-auto rounded-full hover:bg-black hover:text-white transition"
+                    :class="{ 'error animate-shake': error, success: success }"
+                    :disabled="loading"
+                    :aria-busy="loading"
+            >
+                <span>M'avertir</span>
+                <svg
+                        class="w-5 h-5  group-hover:fill-white transition"
+                        viewBox="0 0 14 14"
+                        fill="black"
+                        xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path d="M4.95618 13.2756L4.72887 12.8842L4.72887 12.8842L4.95618 13.2756ZM4.45118 12.8936L4.00199 12.8381L4.00199 12.8381L4.45118 12.8936ZM4.05142 10.7568L3.65613 10.9773L3.65886 10.9821L4.05142 10.7568ZM3.4479 9.67503L3.84319 9.45451L3.84046 9.44974L3.4479 9.67503ZM12.9446 8.63597L13.1719 9.02736L13.1719 9.02736L12.9446 8.63597ZM12.8759 8.01202L13.0614 7.59914L13.0614 7.59913L12.8759 8.01202ZM11.2547 6.57317L10.8592 6.79345L10.8621 6.79847L11.2547 6.57317ZM10.6817 5.54462L11.0771 5.32434L11.0743 5.31932L10.6817 5.54462ZM4.94916 3.98469L5.17648 4.37608L4.94916 3.98469ZM8.73621 13.2252L8.96352 13.6166L8.73621 13.2252ZM0.45748 7.13933C0.492732 7.3868 0.721923 7.55884 0.969394 7.52359C1.21686 7.48834 1.3889 7.25915 1.35365 7.01168L0.905565 7.07551L0.45748 7.13933ZM1.80649 4.72217C1.93724 4.50912 1.87052 4.23042 1.65747 4.09968C1.44442 3.96893 1.16572 4.03565 1.03497 4.2487L1.42073 4.48544L1.80649 4.72217ZM6.93082 0.83386C6.68089 0.838601 6.48213 1.04505 6.48687 1.29497C6.49162 1.5449 6.69806 1.74365 6.94799 1.73891L6.9394 1.28639L6.93082 0.83386ZM9.14752 2.46923C9.34196 2.62631 9.62693 2.59603 9.78402 2.40159C9.9411 2.20714 9.91082 1.92217 9.71638 1.76509L9.43195 2.11716L9.14752 2.46923ZM4.45118 12.8936L4.90037 12.9492C4.98302 12.2807 4.93208 11.382 4.44397 10.5315L4.05142 10.7568L3.65886 10.9821C4.02172 11.6143 4.06845 12.3006 4.00199 12.8381L4.45118 12.8936ZM4.05142 10.7568L4.44668 10.5363L3.84316 9.45452L3.4479 9.67503L3.05265 9.89554L3.65616 10.9773L4.05142 10.7568ZM12.8759 8.01202L13.0614 7.59913C12.5786 7.38233 12.0156 6.98966 11.6472 6.34788L11.2547 6.57317L10.8621 6.79847C11.3506 7.64957 12.086 8.1534 12.6905 8.4249L12.8759 8.01202ZM11.2547 6.57317L11.6501 6.35291L11.0771 5.32436L10.6817 5.54462L10.2863 5.76487L10.8593 6.79343L11.2547 6.57317ZM10.6817 5.54462L11.0743 5.31932C9.78871 3.07937 6.94533 2.30191 4.72184 3.59331L4.94916 3.98469L5.17648 4.37608C6.96033 3.34002 9.25005 3.95936 10.2892 5.76991L10.6817 5.54462ZM12.9446 8.63597L13.1719 9.02736C13.4886 8.8434 13.5605 8.50261 13.5308 8.26004C13.501 8.01797 13.3579 7.7323 13.0614 7.59914L12.8759 8.01202L12.6905 8.4249C12.6589 8.41068 12.6431 8.39127 12.6377 8.38297C12.6329 8.37549 12.6325 8.37179 12.6323 8.37033C12.6322 8.36932 12.6304 8.35577 12.6397 8.33216C12.6505 8.30501 12.6751 8.26904 12.7172 8.24459L12.9446 8.63597ZM3.4479 9.67503L3.84046 9.44974C2.81733 7.66705 3.42009 5.39619 5.17648 4.37608L4.94916 3.98469L4.72184 3.59331C2.52907 4.86687 1.78755 7.69131 3.05535 9.90033L3.4479 9.67503ZM4.95618 13.2756L4.72887 12.8842C4.77218 12.8591 4.81731 12.8556 4.8475 12.8603C4.87356 12.8644 4.8845 12.8732 4.88493 12.8735C4.88577 12.8742 4.88836 12.876 4.89201 12.8835C4.89609 12.8919 4.90459 12.915 4.90037 12.9492L4.45118 12.8936L4.00199 12.8381C3.96162 13.1646 4.13537 13.4376 4.32977 13.5885C4.52427 13.7395 4.86034 13.8547 5.1835 13.667L4.95618 13.2756ZM12.9446 8.63597L12.7172 8.24459L4.72887 12.8842L4.95618 13.2756L5.1835 13.667L13.1719 9.02736L12.9446 8.63597ZM9.51872 10.6257L9.12616 10.851C9.49936 11.5012 9.25849 12.3985 8.50889 12.8338L8.73621 13.2252L8.96352 13.6166C10.0981 12.9576 10.5579 11.5272 9.91127 10.4004L9.51872 10.6257ZM8.73621 13.2252L8.50889 12.8338C7.76052 13.2685 6.87173 13.0302 6.49964 12.3819L6.10709 12.6072L5.71454 12.8325C6.36231 13.9611 7.82771 14.2763 8.96352 13.6166L8.73621 13.2252ZM5.4298 2.1802L5.03725 2.4055C5.27652 2.8224 5.13345 3.35425 4.72184 3.59331L4.94916 3.98469L5.17648 4.37608C6.021 3.88558 6.30831 2.80164 5.82235 1.95491L5.4298 2.1802ZM4.94916 3.98469L4.72184 3.59331C4.31183 3.83145 3.7863 3.69122 3.54793 3.27589L3.15538 3.50118L2.76283 3.72648C3.24969 4.57477 4.33036 4.8675 5.17648 4.37608L4.94916 3.98469ZM3.15538 3.50118L3.54793 3.27589C3.30867 2.85899 3.45173 2.32713 3.86334 2.08807L3.63602 1.69669L3.40871 1.30531C2.56419 1.7958 2.27687 2.87975 2.76283 3.72648L3.15538 3.50118ZM3.63602 1.69669L3.86334 2.08807C4.27335 1.84994 4.79888 1.99016 5.03725 2.4055L5.4298 2.1802L5.82235 1.95491C5.3355 1.10661 4.25482 0.813883 3.40871 1.30531L3.63602 1.69669ZM0.905565 7.07551L1.35365 7.01168C1.23899 6.20678 1.39286 5.39618 1.80649 4.72217L1.42073 4.48544L1.03497 4.2487C0.503599 5.11458 0.315153 6.14019 0.45748 7.13933L0.905565 7.07551ZM6.9394 1.28639L6.94799 1.73891C7.75744 1.72356 8.53683 1.97587 9.14752 2.46923L9.43195 2.11716L9.71638 1.76509C8.92853 1.1286 7.93786 0.814755 6.93082 0.83386L6.9394 1.28639Z" />
+                </svg>
+            </button>
+            <p class="text-sm text-gray-500 mt-2 min-h-[24px]" x-text="helpMsg" role="status"></p>
+        </form>
+
+        <!-- CAROUSEL SHOWCASE -->
+        <div
+                class="mt-12 flex flex-col items-center gap-6 w-full max-w-4xl mx-auto"
+                x-data="{
+                images: [
+                  'Image/Group 3.jpg',
+                  'Image/Group 6.png'
+                ],
+                cur: 0,
+                timer: null,
+                tooltip: null,
+                slideTo(i) {
+                  this.cur = i;
+                  this.restart();
+                },
+                prev() {
+                  this.cur = (this.cur - 1 + 3) % 3;
+                  this.restart();
+                },  /* 3 slides total (2 images + dock) */
+                next() {
+                  this.cur = (this.cur + 1) % 3;
+                  this.restart();
+                },
+                restart() {
+                  clearInterval(this.timer);
+                  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+                    return;
+                  this.timer = setInterval(() => this.next(), 10000);
+                },
+                init() {
+                  this.restart();
+                }
+              }"
+                x-init="init"
+                data-aos="fade-up"
+                data-aos-delay="400"
+        >
+            <!-- Slide 1 & 2: images -->
+            <template x-if="cur < 2">
+                <img
+                        :src="
+                      cur === 0 ? 'Image/Group 3.jpg' : 'Image/Group 6.png'
+                    "
+                        alt="Slide image"
+                        class="w-full max-w-full rounded-lg object-cover object-center"
+                        style="height: 400px"
+                />
+            </template>
+
+            <!-- Slide 3: dock macOS interactif avec fond et icônes centrées -->
+            <template x-if="cur === 2">
+                <div
+                        class="relative flex justify-center rounded-lg object-cover object-center p-5"
+                        style="height: 400px; background-image: url('https://www.ytechb.com/wp-content/uploads/2025/06/macOS-Tahoe-26-Wallpapers-1.webp')"
+                >
+                    <div
+                            class="backdrop-blur-xl shadow-lg  rounded-3xl px-12 py-6 flex justify-center gap-12 items-center justify-center mx-auto mt-40 h-full border border-white/30 max-w-4xl w-full"
+                            style="min-width: 620px; height: 100px"
+                    >
+                        <template
+                                class=""
+                                x-for="icon in [
+                              { label: 'Finder', img: 'Image/Finder icon.png' },
+                              { label: 'App Store', img: 'Image/App Store icon.png' },
+                              { label: 'Template', img: 'Image/Put your image.png' },
+                              { label: 'Figma', img: 'Image/Figma.png' },
+                              { label: 'FaceTime', img: 'Image/FaceTime.png' }
+                            ]"
+                                :key="icon.label"
+                        >
+                            <div
+                                    class="relative flex flex-col items-center group cursor-pointer select-none"
+                                    @mouseenter="tooltip = icon.label"
+                                    @mouseleave="tooltip = null"
+                                    style="will-change: transform"
+                            >
+                                <img
+                                        :src="icon.img"
+                                        :alt="icon.label"
+                                        class="w-20 h-20 rounded-xl  transition-transform duration-200 ease-in-out group-hover:scale-125 group-hover:-translate-y-4"
+                                        draggable="false"
+                                />
+                                <!-- Tooltip -->
+                                <div
+                                        x-show="tooltip === icon.label"
+                                        class="absolute -top-[80%] left-1/2 -translate-x-1/2 px-[30%] py-1 rounded-lg bg-[#D9D9D9] text-xs font-medium text-black opacity-90 pointer-events-none shadow-lg whitespace-nowrap"
+                                        x-transition
+                                >
+                                    <span x-text="icon.label"></span>
+                                    <!-- Flèche en bas -->
+                                    <div
+                                            class="absolute left-1/2 top-full -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#D9D9D9]"
+                                    ></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Dots navigation -->
+            <div class="flex justify-center gap-3 mt-4">
+                <template x-for="i in 3" :key="i">
+                    <button
+                            class="w-3 h-3 rounded-full transition-colors"
+                            :class="cur === i - 1 ? 'bg-black' : 'bg-gray-300'"
+                            @click="slideTo(i - 1)"
+                            :aria-selected="cur === i - 1"
+                            aria-label="Changer la diapositive"
+                    ></button>
+                </template>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="text-center py-5 text-gray-700">2025 AirSend</footer>
+
+<script src="js/waitingList.js"></script>
+<!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        once: true,
+    });
+</script>
+</body>
+</html>

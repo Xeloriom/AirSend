@@ -65,4 +65,53 @@ button.icon-btn {
     transform: rotate(180deg);
 }
 
+/* Pop personnes */
+.pop { animation: pop 0.25s; }
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+/* Bouton shake */
+.animate-shake {
+    animation: shake 0.38s cubic-bezier(.36,.07,.19,.97) both;
+}
+@keyframes shake {
+    10%, 90% { transform: translateX(-2px);}
+    20%, 80% { transform: translateX(4px);}
+    30%, 50%, 70% { transform: translateX(-8px);}
+    40%, 60% { transform: translateX(8px);}
+}
+
+/* Cloche success */
+@keyframes bellSuccess {
+    0% { transform: rotate(0deg); }
+    20% { transform: rotate(-15deg); }
+    40% { transform: rotate(10deg); }
+    60% { transform: rotate(-10deg); }
+    80% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+}
+.animate-bell-success {
+    animation: bellSuccess 0.6s ease-in-out;
+    fill: #22c55e !important;
+}
+
+/* Cloche error */
+@keyframes bellError {
+    0% { transform: translateY(0); }
+    25% { transform: translateY(-5px); }
+    50% { transform: translateY(5px); }
+    75% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
+.animate-bell-error {
+    animation: bellError 0.5s ease-in-out;
+    fill: #ef4444 !important;
+}
+
+/* Bouton success/error colors */
+button.success { background-color: #22c55e !important; color: white !important; }
+button.error { background-color: #ef4444 !important; color: white !important; }
 
